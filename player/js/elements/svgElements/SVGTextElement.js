@@ -131,7 +131,9 @@ SVGTextLottieElement.prototype.buildNewText = function () {
     var textContent = this.buildTextContents(documentData.finalText);
     len = textContent.length;
     yPos = documentData.ps ? documentData.ps[1] + documentData.ascent : 0;
-    console.log('uoo', textContent);
+    // console.log('uoo', textContent);
+
+
     for (i = 0; i < len; i += 1) {
       tSpan = this.textSpans[i].span || createNS('tspan');
       tSpan.textContent = textContent[i];
@@ -339,23 +341,32 @@ SVGTextLottieElement.prototype.renderInnerContent = function () {
             glyphElement.renderFrame();
           }
           if (renderedLetter._mdf.m) {
-            var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
+            /// Check if we have an svg-rtl class
+            const layerClass = this.layerElement.getAttribute('class');
 
-            // Extract the matrix components
-            var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
+            if (layerClass && layerClass.includes('hebrew-rtl')) {
+              // If we have an svg-rtl class, flip the text
+              var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
 
-            // Negate the 'a' component for horizontal flip
-            matrixValues[0] = -matrixValues[0];
+              // Extract the matrix components
+              var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
 
-            // Adjust translation x (`e`) to maintain positioning
-            var bbox = textSpan.getBBox(); // Get bounding box of text element
-            matrixValues[4] += bbox.width; // Adjust translation based on character width
+              // Negate the 'a' component for horizontal flip
+              matrixValues[0] = -matrixValues[0];
 
-            // Construct the new matrix string
-            var newMatrix = `matrix(${matrixValues.join(',')})`;
+              // Adjust translation x (`e`) to maintain positioning
+              var bbox = textSpan.getBBox(); // Get bounding box of text element
+              matrixValues[4] += bbox.width; // Adjust translation based on character width
 
-            // Apply the new transformation
-            textSpan.setAttribute('transform', newMatrix);
+              // Construct the new matrix string
+              var newMatrix = `matrix(${matrixValues.join(',')})`;
+
+              // Apply the new transformation
+              textSpan.setAttribute('transform', newMatrix);
+            }
+            else {
+              textSpan.setAttribute('transform', renderedLetter.m);
+            }
           }
 
           if (renderedLetter._mdf.o) {

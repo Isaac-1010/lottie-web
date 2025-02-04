@@ -75,7 +75,8 @@ SVGBaseElement.prototype = {
       const localMat = this.finalTransform.localMat;
 
       const layerClass = this.layerElement.getAttribute('class');
-      if (layerClass && layerClass.includes('vertical-align')) {
+
+      if (layerClass && layerClass.includes('hebrew-rtl')) {
         // const bbox = this.layerElement.getBBox();
         // const parent = this.layerElement.parentNode;
         // console.log(parent);

@@ -7595,7 +7595,7 @@
       if (this.finalTransform._localMatMdf) {
         var localMat = this.finalTransform.localMat;
         var layerClass = this.layerElement.getAttribute('class');
-        if (layerClass && layerClass.includes('vertical-align')) {
+        if (layerClass && layerClass.includes('hebrew-rtl')) {
           // const bbox = this.layerElement.getBBox();
           // const parent = this.layerElement.parentNode;
           // console.log(parent);
@@ -10272,7 +10272,8 @@
       var textContent = this.buildTextContents(documentData.finalText);
       len = textContent.length;
       yPos = documentData.ps ? documentData.ps[1] + documentData.ascent : 0;
-      console.log('uoo', textContent);
+      // console.log('uoo', textContent);
+
       for (i = 0; i < len; i += 1) {
         tSpan = this.textSpans[i].span || createNS('tspan');
         tSpan.textContent = textContent[i];
@@ -10464,23 +10465,30 @@
               glyphElement.renderFrame();
             }
             if (renderedLetter._mdf.m) {
-              var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
+              /// Check if we have an svg-rtl class
+              var layerClass = this.layerElement.getAttribute('class');
+              if (layerClass && layerClass.includes('hebrew-rtl')) {
+                // If we have an svg-rtl class, flip the text
+                var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
 
-              // Extract the matrix components
-              var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
+                // Extract the matrix components
+                var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
 
-              // Negate the 'a' component for horizontal flip
-              matrixValues[0] = -matrixValues[0];
+                // Negate the 'a' component for horizontal flip
+                matrixValues[0] = -matrixValues[0];
 
-              // Adjust translation x (`e`) to maintain positioning
-              var bbox = textSpan.getBBox(); // Get bounding box of text element
-              matrixValues[4] += bbox.width; // Adjust translation based on character width
+                // Adjust translation x (`e`) to maintain positioning
+                var bbox = textSpan.getBBox(); // Get bounding box of text element
+                matrixValues[4] += bbox.width; // Adjust translation based on character width
 
-              // Construct the new matrix string
-              var newMatrix = "matrix(".concat(matrixValues.join(','), ")");
+                // Construct the new matrix string
+                var newMatrix = "matrix(".concat(matrixValues.join(','), ")");
 
-              // Apply the new transformation
-              textSpan.setAttribute('transform', newMatrix);
+                // Apply the new transformation
+                textSpan.setAttribute('transform', newMatrix);
+              } else {
+                textSpan.setAttribute('transform', renderedLetter.m);
+              }
             }
             if (renderedLetter._mdf.o) {
               textSpan.setAttribute('opacity', renderedLetter.o);
