@@ -49,6 +49,7 @@ function RenderableDOMElement() {}
       this.renderRenderable();
       this.renderLocalTransform();
       this.renderElement();
+      // console.log('RENDER', this);
       this.renderInnerContent();
       if (this._isFirstFrame) {
         this._isFirstFrame = false;

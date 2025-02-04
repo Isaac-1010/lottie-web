@@ -533,6 +533,8 @@ TextAnimatorProperty.prototype.getMeasures = function (documentData, lettersChan
         letterFc = 'rgb(' + Math.round(fc[0] * 255) + ',' + Math.round(fc[1] * 255) + ',' + Math.round(fc[2] * 255) + ')';
       }
 
+      // Isaac: This happens per letter, it is positioned relative to the parent
+      // console.log('Clcling', documentData);
       if (this._hasMaskedPath) {
         matrixHelper.translate(0, -documentData.ls);
 
@@ -552,7 +554,10 @@ TextAnimatorProperty.prototype.getMeasures = function (documentData, lettersChan
           currentLength += (documentData.tr * 0.001) * documentData.finalSize;
         }
       } else {
+        /// Isaac - Again, this is per letter
+
         matrixHelper.translate(xPos, yPos, 0);
+        // matrixHelper.translate(xPos, yPos, 0);
 
         if (documentData.ps) {
           // matrixHelper.translate(documentData.ps[0],documentData.ps[1],0);

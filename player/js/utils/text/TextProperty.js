@@ -367,6 +367,7 @@ TextProperty.prototype.completeTextData = function (documentData) {
     documentData.boxWidth = documentData.sz[0];
     documentData.justifyOffset = 0;
   } else {
+    // console.log('sz not found');
     documentData.boxWidth = maxLineWidth;
     switch (documentData.j) {
       case 1:
@@ -423,7 +424,10 @@ TextProperty.prototype.completeTextData = function (documentData) {
       }
     }
   }
-  documentData.yOffset = documentData.finalLineHeight || documentData.finalSize * 1.2;
+  // Isaac : This affects all lines after the first
+  documentData.yOffset = (documentData.finalLineHeight || documentData.finalSize * 1.2);
+
+  // console.log(documentData);
   documentData.ls = documentData.ls || 0;
   documentData.ascent = (fontData.ascent * documentData.finalSize) / 100;
 };

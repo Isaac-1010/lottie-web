@@ -73,7 +73,7 @@ SVGTextLottieElement.prototype.buildNewText = function () {
   this.addDynamicProperty(this);
   var i;
   var len;
-
+  // console.log('buildNewText');
   var documentData = this.textProperty.currentData;
   this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
   if (documentData.fc) {
@@ -110,7 +110,9 @@ SVGTextLottieElement.prototype.buildNewText = function () {
   var yPos = 0;
   var firstLine = true;
   var trackingOffset = documentData.tr * 0.001 * documentData.finalSize;
+
   if (singleShape && !usesGlyphs && !documentData.sz) {
+    /// Isaac : This won't happen
     var tElement = this.textContainer;
     var justify = 'start';
     switch (documentData.j) {
@@ -129,11 +131,15 @@ SVGTextLottieElement.prototype.buildNewText = function () {
     var textContent = this.buildTextContents(documentData.finalText);
     len = textContent.length;
     yPos = documentData.ps ? documentData.ps[1] + documentData.ascent : 0;
+    console.log('uoo', textContent);
     for (i = 0; i < len; i += 1) {
       tSpan = this.textSpans[i].span || createNS('tspan');
       tSpan.textContent = textContent[i];
+
+      // Isaac - it won't log here
       tSpan.setAttribute('x', 0);
       tSpan.setAttribute('y', yPos);
+
       tSpan.style.display = 'inherit';
       tElement.appendChild(tSpan);
       if (!this.textSpans[i]) {
@@ -159,18 +165,51 @@ SVGTextLottieElement.prototype.buildNewText = function () {
         };
       }
       if (!usesGlyphs || !singleShape || i === 0) {
+        // Isaac - It enters here on most text layers
         tSpan = cachedSpansLength > i ? this.textSpans[i].span : createNS(usesGlyphs ? 'g' : 'text');
+
         if (cachedSpansLength <= i) {
           tSpan.setAttribute('stroke-linecap', 'butt');
           tSpan.setAttribute('stroke-linejoin', 'round');
           tSpan.setAttribute('stroke-miterlimit', '4');
+          tSpan.setAttribute('stroke-miterlimit', '4');
+          tSpan.setAttribute('y', yPos);
+
           this.textSpans[i].span = tSpan;
           if (usesGlyphs) {
             var childSpan = createNS('g');
             tSpan.appendChild(childSpan);
             this.textSpans[i].childSpan = childSpan;
           }
+
+          // Apply vertical alignment if specified
+          // this.data.verticalAlign = 'not';
+          // if (this.data.verticalAlign && i === 0) {
+          //   const bbox = this.sourceRectAtTime();
+          //   let alignmentOffset = 0;
+          //
+          //   switch (this.data.verticalAlign) {
+          //     case 'middle':
+          //       alignmentOffset = -bbox / 2;
+          //       break;
+          //     case 'bottom':
+          //       alignmentOffset = -bbox;
+          //       break;
+          //     default:
+          //       alignmentOffset = 0;
+          //       break;
+          //   }
+          //   yPos += alignmentOffset;
+          // }
+
+          // tSpan.setAttribute('y', yPos);
+
+          // This happens per letter
           this.textSpans[i].span = tSpan;
+          if (i === 0) {
+            console.log(this.textSpans[0]);
+            console.log(this.layerElement);
+          }
           this.layerElement.appendChild(tSpan);
         }
         tSpan.style.display = 'inherit';
@@ -236,6 +275,7 @@ SVGTextLottieElement.prototype.buildNewText = function () {
   }
   while (i < this.textSpans.length) {
     this.textSpans[i].span.style.display = 'none';
+
     i += 1;
   }
 
@@ -299,8 +339,25 @@ SVGTextLottieElement.prototype.renderInnerContent = function () {
             glyphElement.renderFrame();
           }
           if (renderedLetter._mdf.m) {
-            textSpan.setAttribute('transform', renderedLetter.m);
+            var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
+
+            // Extract the matrix components
+            var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
+
+            // Negate the 'a' component for horizontal flip
+            matrixValues[0] = -matrixValues[0];
+
+            // Adjust translation x (`e`) to maintain positioning
+            var bbox = textSpan.getBBox(); // Get bounding box of text element
+            matrixValues[4] += bbox.width; // Adjust translation based on character width
+
+            // Construct the new matrix string
+            var newMatrix = `matrix(${matrixValues.join(',')})`;
+
+            // Apply the new transformation
+            textSpan.setAttribute('transform', newMatrix);
           }
+
           if (renderedLetter._mdf.o) {
             textSpan.setAttribute('opacity', renderedLetter.o);
           }

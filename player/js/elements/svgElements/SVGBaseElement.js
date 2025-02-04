@@ -72,7 +72,20 @@ SVGBaseElement.prototype = {
   },
   renderElement: function () {
     if (this.finalTransform._localMatMdf) {
-      this.transformedElement.setAttribute('transform', this.finalTransform.localMat.to2dCSS());
+      const localMat = this.finalTransform.localMat;
+
+      const layerClass = this.layerElement.getAttribute('class');
+      if (layerClass && layerClass.includes('vertical-align')) {
+        // const bbox = this.layerElement.getBBox();
+        // const parent = this.layerElement.parentNode;
+        // console.log(parent);
+        localMat.props[13] = 540;
+        localMat.props[0] *= -1;
+        // console.log(layerClass);
+      }
+      // console.log(layerClass);
+
+      this.transformedElement.setAttribute('transform', localMat.to2dCSS());
     }
     if (this.finalTransform._opMdf) {
       this.transformedElement.setAttribute('opacity', this.finalTransform.localOpacity);
