@@ -10094,7 +10094,8 @@
 
     var layerText = data === null || data === void 0 || (_data$t = data.t) === null || _data$t === void 0 || (_data$t = _data$t.d) === null || _data$t === void 0 || (_data$t = _data$t.k) === null || _data$t === void 0 || (_data$t = _data$t[0]) === null || _data$t === void 0 || (_data$t = _data$t.s) === null || _data$t === void 0 ? void 0 : _data$t.t;
     if (!layerText) return;
-    console.log('Heb', data);
+
+    // console.log('Heb', data);
 
     // If we find hebrew or arabic characteres, we should add a class to the layer
     if (/[\u0590-\u05FF\u0600-\u06FF]/.test(layerText)) {
@@ -10116,7 +10117,7 @@
           var englishWords = inputText.match(/[a-zA-Z]+/g);
           console.log('Detected English words:', englishWords);
           if (!englishWords) return inputText;
-          return text.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, function (match) {
+          return inputText.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, function (match) {
             console.log('Processing match:', match);
             // Reverse the entire sequence of English words
             return match.split(/\s+/).reverse().map(reverseWord).join(' ');
@@ -10128,7 +10129,11 @@
 
         // Convert the processed text back to an array of characters
         // Flip justification 0 <--> 1, if it's 2, keep it the same
-        data.t.d.k[0].s.j = data.t.d.k[0].s.j ? 1 - data.t.d.k[0].s.j : 1;
+        if (data.t.d.k[0].s.j === 1) {
+          data.t.d.k[0].s.j = 0;
+        } else if (data.t.d.k[0].s.j === 0) {
+          data.t.d.k[0].s.j = 1;
+        }
         data.t.d.k[0].s.t = processedText;
       }
     }

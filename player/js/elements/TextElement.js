@@ -11,7 +11,7 @@ ITextElement.prototype.takeCareOfHebrew= function (data) {
   let layerText = data?.t?.d?.k?.[0]?.s?.t;
   if(!layerText) return;
 
-  console.log('Heb', data);
+  // console.log('Heb', data);
 
     // If we find hebrew or arabic characteres, we should add a class to the layer
     if (/[\u0590-\u05FF\u0600-\u06FF]/.test(layerText)) {
@@ -39,7 +39,8 @@ ITextElement.prototype.takeCareOfHebrew= function (data) {
           console.log('Detected English words:', englishWords);
 
           if(!englishWords) return inputText;
-          return text.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, match => {
+
+          return inputText.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, match => {
             console.log('Processing match:', match);
             // Reverse the entire sequence of English words
             return match.split(/\s+/).reverse().map(reverseWord).join(' ');
@@ -52,7 +53,11 @@ ITextElement.prototype.takeCareOfHebrew= function (data) {
 
         // Convert the processed text back to an array of characters
         // Flip justification 0 <--> 1, if it's 2, keep it the same
-        data.t.d.k[0].s.j = data.t.d.k[0].s.j  ? 1 - data.t.d.k[0].s.j : 1;
+        if(data.t.d.k[0].s.j === 1) {
+          data.t.d.k[0].s.j = 0;
+        } else if(data.t.d.k[0].s.j === 0) {
+          data.t.d.k[0].s.j = 1;
+        }
         data.t.d.k[0].s.t = processedText
       }
     }
