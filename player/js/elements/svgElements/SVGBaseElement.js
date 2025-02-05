@@ -76,15 +76,12 @@ SVGBaseElement.prototype = {
 
       const layerClass = this.layerElement.getAttribute('class');
 
+
+      // Flip the whole layer in case it has to be RTL
       if (layerClass && layerClass.includes('hebrew-rtl')) {
-        // const bbox = this.layerElement.getBBox();
-        // const parent = this.layerElement.parentNode;
-        // console.log(parent);
-        localMat.props[13] = 540;
         localMat.props[0] *= -1;
-        // console.log(layerClass);
       }
-      // console.log(layerClass);
+      console.log(this.baseElement);
 
       this.transformedElement.setAttribute('transform', localMat.to2dCSS());
     }

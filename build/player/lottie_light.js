@@ -7595,16 +7595,12 @@
       if (this.finalTransform._localMatMdf) {
         var localMat = this.finalTransform.localMat;
         var layerClass = this.layerElement.getAttribute('class');
-        if (layerClass && layerClass.includes('hebrew-rtl')) {
-          // const bbox = this.layerElement.getBBox();
-          // const parent = this.layerElement.parentNode;
-          // console.log(parent);
-          localMat.props[13] = 540;
-          localMat.props[0] *= -1;
-          // console.log(layerClass);
-        }
-        // console.log(layerClass);
 
+        // Flip the whole layer in case it has to be RTL
+        if (layerClass && layerClass.includes('hebrew-rtl')) {
+          localMat.props[0] *= -1;
+        }
+        console.log(this.baseElement);
         this.transformedElement.setAttribute('transform', localMat.to2dCSS());
       }
       if (this.finalTransform._opMdf) {
@@ -10092,12 +10088,61 @@
   extendPrototype([DynamicPropertyContainer], TextAnimatorProperty);
 
   function ITextElement() {}
+  ITextElement.prototype.takeCareOfHebrew = function (data) {
+    var _data$t;
+    /// check if this path in the data object exists : data.t.d.k[0].s.t
+
+    var layerText = data === null || data === void 0 || (_data$t = data.t) === null || _data$t === void 0 || (_data$t = _data$t.d) === null || _data$t === void 0 || (_data$t = _data$t.k) === null || _data$t === void 0 || (_data$t = _data$t[0]) === null || _data$t === void 0 || (_data$t = _data$t.s) === null || _data$t === void 0 ? void 0 : _data$t.t;
+    if (!layerText) return;
+    console.log('Heb', data);
+
+    // If we find hebrew or arabic characteres, we should add a class to the layer
+    if (/[\u0590-\u05FF\u0600-\u06FF]/.test(layerText)) {
+      console.log('Found Hebrew text in ' + layerText);
+      var currentClass = data.cl;
+
+      // If it has no 'hebrew-rtl' class, we will add it and process the text
+      if (!(currentClass !== null && currentClass !== void 0 && currentClass.includes('hebrew-rtl'))) {
+        // Function to reverse the letters in each English word
+        var reverseWord = function reverseWord(word) {
+          console.log('Reversing word:', word);
+          var reveresed = word.split('').reverse().join('');
+          return reveresed;
+        }; // Function to reverse the order of English words while preserving Hebrew structure
+        var processText = function processText(inputText) {
+          console.log('Processing text:', inputText);
+
+          // Detect and log all English words
+          var englishWords = inputText.match(/[a-zA-Z]+/g);
+          console.log('Detected English words:', englishWords);
+          if (!englishWords) return inputText;
+          return text.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, function (match) {
+            console.log('Processing match:', match);
+            // Reverse the entire sequence of English words
+            return match.split(/\s+/).reverse().map(reverseWord).join(' ');
+          });
+        }; // Flip English words and their order (only happens once)
+        data.cl = (currentClass ? currentClass + ' ' : '') + 'hebrew-rtl';
+        var processedText = processText(layerText);
+        console.log(processedText);
+
+        // Convert the processed text back to an array of characters
+        // Flip justification 0 <--> 1, if it's 2, keep it the same
+        data.t.d.k[0].s.j = data.t.d.k[0].s.j ? 1 - data.t.d.k[0].s.j : 1;
+        data.t.d.k[0].s.t = processedText;
+      }
+    }
+  };
   ITextElement.prototype.initElement = function (data, globalData, comp) {
     this.lettersChangedFlag = true;
     this.initFrame();
+    console.log(data);
+    this.takeCareOfHebrew(data);
     this.initBaseData(data, globalData, comp);
     this.textProperty = new TextProperty(this, data.t, this.dynamicProperties);
     this.textAnimator = new TextAnimatorProperty(data.t, this.renderType, this);
+    console.log(this.textProperty);
+    console.log(this.textAnimator);
     this.initTransform(data, globalData, comp);
     this.initHierarchy();
     this.initRenderable();
@@ -10214,11 +10259,17 @@
     return data;
   };
   SVGTextLottieElement.prototype.buildNewText = function () {
+    var _this$textProperty;
     this.addDynamicProperty(this);
     var i;
     var len;
-    // console.log('buildNewText');
     var documentData = this.textProperty.currentData;
+    if ((_this$textProperty = this.textProperty) !== null && _this$textProperty !== void 0 && (_this$textProperty = _this$textProperty.elem) !== null && _this$textProperty !== void 0 && _this$textProperty.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
+      console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
+      console.log('buildNewText', documentData.finalSize);
+    }
+    // documentData.t += 'aaaa';
+
     this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
     if (documentData.fc) {
       this.layerElement.setAttribute('fill', this.buildColor(documentData.fc));
@@ -10344,10 +10395,10 @@
 
             // This happens per letter
             this.textSpans[i].span = tSpan;
-            if (i === 0) {
-              console.log(this.textSpans[0]);
-              console.log(this.layerElement);
-            }
+            // if (i === 0) {
+            // console.log(this.textSpans[0]);
+            // console.log(this.layerElement);
+            // }
             this.layerElement.appendChild(tSpan);
           }
           tSpan.style.display = 'inherit';

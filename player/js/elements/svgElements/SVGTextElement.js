@@ -73,8 +73,16 @@ SVGTextLottieElement.prototype.buildNewText = function () {
   this.addDynamicProperty(this);
   var i;
   var len;
-  // console.log('buildNewText');
+
   var documentData = this.textProperty.currentData;
+
+  if(this.textProperty?.elem?.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
+    console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
+    console.log('buildNewText', documentData.finalSize);
+
+  }
+  // documentData.t += 'aaaa';
+
   this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
   if (documentData.fc) {
     this.layerElement.setAttribute('fill', this.buildColor(documentData.fc));
@@ -97,6 +105,9 @@ SVGTextLottieElement.prototype.buildNewText = function () {
     this.layerElement.setAttribute('font-weight', fWeight);
   }
   this.layerElement.setAttribute('aria-label', documentData.t);
+
+
+
 
   var letters = documentData.l || [];
   var usesGlyphs = !!this.globalData.fontManager.chars;
@@ -208,10 +219,10 @@ SVGTextLottieElement.prototype.buildNewText = function () {
 
           // This happens per letter
           this.textSpans[i].span = tSpan;
-          if (i === 0) {
-            console.log(this.textSpans[0]);
-            console.log(this.layerElement);
-          }
+          // if (i === 0) {
+            // console.log(this.textSpans[0]);
+            // console.log(this.layerElement);
+          // }
           this.layerElement.appendChild(tSpan);
         }
         tSpan.style.display = 'inherit';
