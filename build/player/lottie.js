@@ -7600,7 +7600,8 @@
         if (layerClass && layerClass.includes('hebrew-rtl')) {
           localMat.props[0] *= -1;
         }
-        console.log(this.baseElement);
+        // console.log(this.baseElement);
+
         this.transformedElement.setAttribute('transform', localMat.to2dCSS());
       }
       if (this.finalTransform._opMdf) {
