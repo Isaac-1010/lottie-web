@@ -76,9 +76,11 @@ SVGBaseElement.prototype = {
 
       const layerClass = this.layerElement.getAttribute('class');
 
-
       // Flip the whole layer in case it has to be RTL
-      if (layerClass && layerClass.includes('hebrew-rtl')) {
+      if (layerClass &&  layerClass.includes('hebrew-rtl') && this.comp.renderedFrame <= 1) {
+        console.log('Flipping');
+
+        this.data.firstTime = true;
         localMat.props[0] *= -1;
       }
       // console.log(this.baseElement);

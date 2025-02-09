@@ -7891,15 +7891,14 @@
       if (this.finalTransform._localMatMdf) {
         var localMat = this.finalTransform.localMat;
         var layerClass = this.layerElement.getAttribute('class');
-        if (layerClass && layerClass.includes('vertical-align')) {
-          // const bbox = this.layerElement.getBBox();
-          // const parent = this.layerElement.parentNode;
-          // console.log(parent);
-          localMat.props[13] = 540;
-          localMat.props[5] *= -1;
-          // console.log(layerClass);
+
+        // Flip the whole layer in case it has to be RTL
+        if (layerClass && layerClass.includes('hebrew-rtl') && this.comp.renderedFrame <= 1) {
+          console.log('Flipping');
+          this.data.firstTime = true;
+          localMat.props[0] *= -1;
         }
-        // console.log(layerClass);
+        // console.log(this.baseElement);
 
         this.transformedElement.setAttribute('transform', localMat.to2dCSS());
       }
@@ -10388,9 +10387,60 @@
   extendPrototype([DynamicPropertyContainer], TextAnimatorProperty);
 
   function ITextElement() {}
+  ITextElement.prototype.takeCareOfHebrew = function (data) {
+    /// check if this path in the data object exists : data.t.d.k[0].s.t
+
+    if (!data || !data.t || !data.t.d || !data.t.d.k || !data.t.d.k.length > 0 || !data.t.d.k[0] || !data.t.d.k[0].s || !data.t.d.k[0].s.t) return;
+    var layerText = data.t.d.k[0].s.t;
+    if (!layerText) return;
+
+    // console.log('Heb', data);
+
+    // If we find hebrew or arabic characteres, we should add a class to the layer
+    if (/[\u0590-\u05FF\u0600-\u06FF]/.test(layerText)) {
+      console.log('Found Hebrew text in ' + layerText);
+      var currentClass = data.cl;
+
+      // If it has no 'hebrew-rtl' class, we will add it and process the text
+      if (!currentClass || !currentClass.includes('hebrew-rtl')) {
+        // Function to reverse the letters in each English word
+        var reverseWord = function reverseWord(word) {
+          console.log('Reversing word:', word);
+          var reveresed = word.split('').reverse().join('');
+          return reveresed;
+        }; // Function to reverse the order of English words while preserving Hebrew structure
+        var processText = function processText(inputText) {
+          console.log('Processing text:', inputText);
+
+          // Detect and log all English words
+          var englishWords = inputText.match(/[a-zA-Z]+/g);
+          console.log('Detected English words:', englishWords);
+          if (!englishWords) return inputText;
+          return inputText.replace(/([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/g, function (match) {
+            console.log('Processing match:', match);
+            // Reverse the entire sequence of English words
+            return match.split(/\s+/).reverse().map(reverseWord).join(' ');
+          });
+        }; // Flip English words and their order (only happens once)
+        data.cl = (currentClass ? currentClass + ' ' : '') + 'hebrew-rtl';
+        var processedText = processText(layerText);
+        console.log(processedText);
+
+        // Convert the processed text back to an array of characters
+        // Flip justification 0 <--> 1, if it's 2, keep it the same
+        if (data.t.d.k[0].s.j === 1) {
+          data.t.d.k[0].s.j = 0;
+        } else if (data.t.d.k[0].s.j === 0) {
+          data.t.d.k[0].s.j = 1;
+        }
+        data.t.d.k[0].s.t = processedText;
+      }
+    }
+  };
   ITextElement.prototype.initElement = function (data, globalData, comp) {
     this.lettersChangedFlag = true;
     this.initFrame();
+    this.takeCareOfHebrew(data);
     this.initBaseData(data, globalData, comp);
     this.textProperty = new TextProperty(this, data.t, this.dynamicProperties);
     this.textAnimator = new TextAnimatorProperty(data.t, this.renderType, this);
@@ -10513,8 +10563,15 @@
     this.addDynamicProperty(this);
     var i;
     var len;
-    // console.log('buildNewText');
     var documentData = this.textProperty.currentData;
+
+    // if(this.textProperty?.elem?.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
+    //   console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
+    //   console.log('buildNewText', documentData.finalSize);
+    //
+    // }
+    // documentData.t += 'aaaa';
+
     this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
     if (documentData.fc) {
       this.layerElement.setAttribute('fill', this.buildColor(documentData.fc));
@@ -10568,7 +10625,8 @@
       var textContent = this.buildTextContents(documentData.finalText);
       len = textContent.length;
       yPos = documentData.ps ? documentData.ps[1] + documentData.ascent : 0;
-      console.log('uoo', textContent);
+      // console.log('uoo', textContent);
+
       for (i = 0; i < len; i += 1) {
         tSpan = this.textSpans[i].span || createNS('tspan');
         tSpan.textContent = textContent[i];
@@ -10639,10 +10697,10 @@
 
             // This happens per letter
             this.textSpans[i].span = tSpan;
-            if (i === 0) {
-              console.log(this.textSpans[0]);
-              console.log(this.layerElement);
-            }
+            // if (i === 0) {
+            // console.log(this.textSpans[0]);
+            // console.log(this.layerElement);
+            // }
             this.layerElement.appendChild(tSpan);
           }
           tSpan.style.display = 'inherit';
@@ -10708,6 +10766,27 @@
     this._sizeChanged = true;
   };
   SVGTextLottieElement.prototype.sourceRectAtTime = function () {
+    var layerClass = this.layerElement.getAttribute('class');
+    if (layerClass !== null && layerClass !== void 0 && layerClass.includes('static')) {
+      // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
+      if (this.comp.renderedFrame <= 1) {
+        console.log('Hellooo');
+      }
+      //
+      // if(this.textProperty._isFirstFrame) {
+      //   console.log(`NIGGA1`, this.bbox);
+      // }
+
+      if (this.comp.renderedFrame > 1) {
+        // console.log(`This bbox 1`, this.bbox);
+        return this.bbox;
+      }
+
+      // if(this.textProperty._isFirstFrame) {
+      //    console.log(`This bbox 1`, this.bbox);
+      //   // return this.bbox;
+      // }
+    }
     this.prepareFrame(this.comp.renderedFrame - this.data.st);
     this.renderInnerContent();
     if (this._sizeChanged) {
@@ -10760,7 +10839,30 @@
               glyphElement.renderFrame();
             }
             if (renderedLetter._mdf.m) {
-              textSpan.setAttribute('transform', renderedLetter.m);
+              /// Check if we have an svg-rtl class
+              var layerClass = this.layerElement.getAttribute('class');
+              if (layerClass && layerClass.includes('hebrew-rtl')) {
+                // If we have an svg-rtl class, flip the text
+                var existingMatrix = renderedLetter.m; // e.g., "matrix(1, 0, 0, 1, -1467.82, 286.395)"
+
+                // Extract the matrix components
+                var matrixValues = existingMatrix.match(/matrix\(([^)]+)\)/)[1].split(',').map(parseFloat);
+
+                // Negate the 'a' component for horizontal flip
+                matrixValues[0] = -matrixValues[0];
+
+                // Adjust translation x (`e`) to maintain positioning
+                var bbox = textSpan.getBBox(); // Get bounding box of text element
+                matrixValues[4] += bbox.width; // Adjust translation based on character width
+
+                // Construct the new matrix string
+                var newMatrix = "matrix(".concat(matrixValues.join(','), ")");
+
+                // Apply the new transformation
+                textSpan.setAttribute('transform', newMatrix);
+              } else {
+                textSpan.setAttribute('transform', renderedLetter.m);
+              }
             }
             if (renderedLetter._mdf.o) {
               textSpan.setAttribute('opacity', renderedLetter.o);

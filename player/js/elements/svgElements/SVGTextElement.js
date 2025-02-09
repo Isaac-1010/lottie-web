@@ -76,11 +76,11 @@ SVGTextLottieElement.prototype.buildNewText = function () {
 
   var documentData = this.textProperty.currentData;
 
-  if(this.textProperty?.elem?.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
-    console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
-    console.log('buildNewText', documentData.finalSize);
-
-  }
+  // if(this.textProperty?.elem?.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
+  //   console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
+  //   console.log('buildNewText', documentData.finalSize);
+  //
+  // }
   // documentData.t += 'aaaa';
 
   this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
@@ -300,9 +300,9 @@ SVGTextLottieElement.prototype.sourceRectAtTime = function () {
   const layerClass = this.layerElement.getAttribute('class');
   if(layerClass?.includes('static')){
     // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
-    // if(this.comp.renderedFrame <= 1){
-    //   console.log('Hellooo');
-    // }
+    if(this.comp.renderedFrame <= 1){
+      console.log('Hellooo');
+    }
     //
     // if(this.textProperty._isFirstFrame) {
     //   console.log(`NIGGA1`, this.bbox);
@@ -313,9 +313,9 @@ SVGTextLottieElement.prototype.sourceRectAtTime = function () {
       return this.bbox;
     }
 
-    // if(!this.textProperty._isFirstFrame) {
-    //    // console.log(`This bbox 1`, this.bbox);
-    //   return this.bbox;
+    // if(this.textProperty._isFirstFrame) {
+    //    console.log(`This bbox 1`, this.bbox);
+    //   // return this.bbox;
     // }
   }
 

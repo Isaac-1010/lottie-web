@@ -7597,7 +7597,9 @@
         var layerClass = this.layerElement.getAttribute('class');
 
         // Flip the whole layer in case it has to be RTL
-        if (layerClass && layerClass.includes('hebrew-rtl')) {
+        if (layerClass && layerClass.includes('hebrew-rtl') && this.comp.renderedFrame <= 1) {
+          console.log('Flipping');
+          this.data.firstTime = true;
           localMat.props[0] *= -1;
         }
         // console.log(this.baseElement);
@@ -10090,10 +10092,10 @@
 
   function ITextElement() {}
   ITextElement.prototype.takeCareOfHebrew = function (data) {
-    var _data$t;
     /// check if this path in the data object exists : data.t.d.k[0].s.t
 
-    var layerText = data === null || data === void 0 || (_data$t = data.t) === null || _data$t === void 0 || (_data$t = _data$t.d) === null || _data$t === void 0 || (_data$t = _data$t.k) === null || _data$t === void 0 || (_data$t = _data$t[0]) === null || _data$t === void 0 || (_data$t = _data$t.s) === null || _data$t === void 0 ? void 0 : _data$t.t;
+    if (!data || !data.t || !data.t.d || !data.t.d.k || !data.t.d.k.length > 0 || !data.t.d.k[0] || !data.t.d.k[0].s || !data.t.d.k[0].s.t) return;
+    var layerText = data.t.d.k[0].s.t;
     if (!layerText) return;
 
     // console.log('Heb', data);
@@ -10104,7 +10106,7 @@
       var currentClass = data.cl;
 
       // If it has no 'hebrew-rtl' class, we will add it and process the text
-      if (!(currentClass !== null && currentClass !== void 0 && currentClass.includes('hebrew-rtl'))) {
+      if (!currentClass || !currentClass.includes('hebrew-rtl')) {
         // Function to reverse the letters in each English word
         var reverseWord = function reverseWord(word) {
           console.log('Reversing word:', word);
@@ -10142,13 +10144,10 @@
   ITextElement.prototype.initElement = function (data, globalData, comp) {
     this.lettersChangedFlag = true;
     this.initFrame();
-    console.log(data);
     this.takeCareOfHebrew(data);
     this.initBaseData(data, globalData, comp);
     this.textProperty = new TextProperty(this, data.t, this.dynamicProperties);
     this.textAnimator = new TextAnimatorProperty(data.t, this.renderType, this);
-    console.log(this.textProperty);
-    console.log(this.textAnimator);
     this.initTransform(data, globalData, comp);
     this.initHierarchy();
     this.initRenderable();
@@ -10265,15 +10264,16 @@
     return data;
   };
   SVGTextLottieElement.prototype.buildNewText = function () {
-    var _this$textProperty;
     this.addDynamicProperty(this);
     var i;
     var len;
     var documentData = this.textProperty.currentData;
-    if ((_this$textProperty = this.textProperty) !== null && _this$textProperty !== void 0 && (_this$textProperty = _this$textProperty.elem) !== null && _this$textProperty !== void 0 && _this$textProperty.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
-      console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
-      console.log('buildNewText', documentData.finalSize);
-    }
+
+    // if(this.textProperty?.elem?.hierarchy && this.textProperty.elem.hierarchy.length > 0) {
+    //   console.log('buildNewText', this.textProperty.elem.hierarchy[0]);
+    //   console.log('buildNewText', documentData.finalSize);
+    //
+    // }
     // documentData.t += 'aaaa';
 
     this.renderedLetters = createSizedArray(documentData ? documentData.l.length : 0);
@@ -10473,9 +10473,9 @@
     var layerClass = this.layerElement.getAttribute('class');
     if (layerClass !== null && layerClass !== void 0 && layerClass.includes('static')) {
       // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
-      // if(this.comp.renderedFrame <= 1){
-      //   console.log('Hellooo');
-      // }
+      if (this.comp.renderedFrame <= 1) {
+        console.log('Hellooo');
+      }
       //
       // if(this.textProperty._isFirstFrame) {
       //   console.log(`NIGGA1`, this.bbox);
@@ -10486,9 +10486,9 @@
         return this.bbox;
       }
 
-      // if(!this.textProperty._isFirstFrame) {
-      //    // console.log(`This bbox 1`, this.bbox);
-      //   return this.bbox;
+      // if(this.textProperty._isFirstFrame) {
+      //    console.log(`This bbox 1`, this.bbox);
+      //   // return this.bbox;
       // }
     }
     this.prepareFrame(this.comp.renderedFrame - this.data.st);
