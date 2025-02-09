@@ -7597,7 +7597,8 @@
         var layerClass = this.layerElement.getAttribute('class');
 
         // Flip the whole layer in case it has to be RTL
-        if (layerClass && layerClass.includes('hebrew-rtl')) {
+        if (layerClass && layerClass.includes('hebrew-rtl') && this.comp.renderedFrame <= 1) {
+          console.log('Flipping');
           localMat.props[0] *= -1;
         }
         // console.log(this.baseElement);
@@ -10473,9 +10474,9 @@
     var layerClass = this.layerElement.getAttribute('class');
     if (layerClass !== null && layerClass !== void 0 && layerClass.includes('static')) {
       // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
-      // if(this.comp.renderedFrame <= 1){
-      //   console.log('Hellooo');
-      // }
+      if (this.comp.renderedFrame <= 1) {
+        console.log('Hellooo');
+      }
       //
       // if(this.textProperty._isFirstFrame) {
       //   console.log(`NIGGA1`, this.bbox);
@@ -10486,9 +10487,9 @@
         return this.bbox;
       }
 
-      // if(!this.textProperty._isFirstFrame) {
-      //    // console.log(`This bbox 1`, this.bbox);
-      //   return this.bbox;
+      // if(this.textProperty._isFirstFrame) {
+      //    console.log(`This bbox 1`, this.bbox);
+      //   // return this.bbox;
       // }
     }
     this.prepareFrame(this.comp.renderedFrame - this.data.st);
