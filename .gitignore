@@ -12,3 +12,4 @@ commands.txt
 debug.txt
 package-lock.json
 /build/
+build/
