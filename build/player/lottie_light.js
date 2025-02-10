@@ -4436,7 +4436,7 @@
   lottie.useWebWorker = setWebWorker;
   lottie.setIDPrefix = setPrefix;
   lottie.__getFactory = getFactory;
-  lottie.version = '5.12.4';
+  lottie.version = '5.12.6';
   function checkReady() {
     if (document.readyState === 'complete') {
       clearInterval(readyStateCheckInterval);
@@ -7597,7 +7597,7 @@
         var layerClass = this.layerElement.getAttribute('class');
 
         // Flip the whole layer in case it has to be RTL
-        if (layerClass && layerClass.includes('hebrew-rtl') && this.comp.renderedFrame <= 1) {
+        if (layerClass && layerClass.includes('hebrew-rtl') && localMat.props[0] > 0) {
           console.log('Flipping');
           this.data.firstTime = true;
           localMat.props[0] *= -1;
@@ -10473,16 +10473,21 @@
     var layerClass = this.layerElement.getAttribute('class');
     if (layerClass !== null && layerClass !== void 0 && layerClass.includes('static')) {
       // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
-      if (this.comp.renderedFrame <= 1) {
-        console.log('Hellooo');
-      }
+
       //
       // if(this.textProperty._isFirstFrame) {
       //   console.log(`NIGGA1`, this.bbox);
       // }
 
-      if (this.comp.renderedFrame > 1) {
+      if (this.comp.globalData.frameId > 5) {
         // console.log(`This bbox 1`, this.bbox);
+        var textBox = this.layerElement.getBBox();
+        this.bbox = {
+          top: textBox.y,
+          left: textBox.x,
+          width: textBox.width,
+          height: textBox.height
+        };
         return this.bbox;
       }
 

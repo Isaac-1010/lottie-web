@@ -300,16 +300,21 @@ SVGTextLottieElement.prototype.sourceRectAtTime = function () {
   const layerClass = this.layerElement.getAttribute('class');
   if(layerClass?.includes('static')){
     // console.log('isFirsssttt ' , this.textProperty._isFirstFrame);
-    if(this.comp.renderedFrame <= 1){
-      console.log('Hellooo');
-    }
+
     //
     // if(this.textProperty._isFirstFrame) {
     //   console.log(`NIGGA1`, this.bbox);
     // }
 
-    if(this.comp.renderedFrame > 1) {
+    if(this.comp.globalData.frameId > 5) {
        // console.log(`This bbox 1`, this.bbox);
+      var textBox = this.layerElement.getBBox();
+      this.bbox = {
+        top: textBox.y,
+        left: textBox.x,
+        width: textBox.width,
+        height: textBox.height,
+      };
       return this.bbox;
     }
 
